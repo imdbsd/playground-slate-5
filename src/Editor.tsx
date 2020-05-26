@@ -2,7 +2,7 @@ import * as React from 'react'
 import { createEditor, Node } from 'slate'
 import { Slate, Editable, withReact } from 'slate-react'
 import { withHistory } from 'slate-history'
-import { composeDecorate, composeRenderLeaf } from './plugins'
+import { composeDecorate, composeOnChange, composeRenderLeaf } from './plugins'
 import {
   decorate as decorateMention,
   renderLeaf as renderLeafMention,
@@ -17,10 +17,12 @@ const Editor = () => {
     },
   ])
   const handleChangeEditorValue = (value: Node[]) => {
-    setEditorValue(value)
+    console.log({ value })
+    setEditorValue([...value])
   }
 
   const composedDecorate = composeDecorate(decorateMention)
+  const composedOnChange = composeOnChange(handleChangeEditorValue)
 
   const editor = React.useMemo(() => withHistory(withReact(createEditor())), [])
 
@@ -32,13 +34,10 @@ const Editor = () => {
     () => composeRenderLeaf(renderLeafMention),
     []
   )
+  const handleOnChange = composedOnChange(editor)
 
   return (
-    <Slate
-      editor={editor}
-      value={editorValue}
-      onChange={handleChangeEditorValue}
-    >
+    <Slate editor={editor} value={editorValue} onChange={handleOnChange}>
       <Editable decorate={handleDecorate} renderLeaf={handlerRenderLeaf} />
     </Slate>
   )
