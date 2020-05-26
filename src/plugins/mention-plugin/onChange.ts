@@ -1,5 +1,5 @@
-import { Node } from 'slate'
 import { OnChangeHandler } from '../composeOnChange'
+import { getStartMention } from './utils'
 
 type Options = {
   isShowModal: boolean
@@ -10,8 +10,11 @@ type Options = {
 type OnChange = (options: Options) => OnChangeHandler
 const onChange: OnChange = (options) => (value, editor, next) => {
   console.log({ options })
-  if (value.length > 2) {
+  const [isMentioning] = getStartMention(editor)
+  if (isMentioning) {
     options.onShowModal()
+  } else {
+    options.onCloseModal()
   }
   return next(value)
 }

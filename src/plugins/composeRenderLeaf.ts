@@ -1,14 +1,9 @@
-import * as React from 'react'
-import { RenderLeafProps } from 'slate-react'
+import { RenderLeafProps, DefaultLeaf } from 'slate-react'
 
 export type HandlerRenderLeaf = (
   props: RenderLeafProps & { leaf: { type?: string } },
   next: () => JSX.Element
 ) => JSX.Element
-
-const defaultRenderLeaf = (props: RenderLeafProps) => {
-  return <span {...props.attributes}>{props.children}</span>
-}
 
 type ComposeRenderLeaf = (
   ...handlers: HandlerRenderLeaf[]
@@ -23,7 +18,7 @@ const composeRenderLeaf: ComposeRenderLeaf = (...handlers) => {
     }
   )
   return (props) => {
-    return composed(props, () => defaultRenderLeaf(props))
+    return composed(props, () => DefaultLeaf(props))
   }
 }
 

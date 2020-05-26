@@ -21,3 +21,5 @@ export const getStartMention = (editor: Editor): StartMention => {
   }
   return [false, '']
 }
+
+export const useMention = (editor: Editor) => getStartMention(editor)
