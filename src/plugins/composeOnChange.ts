@@ -1,16 +1,29 @@
 import { Node, Editor } from 'slate'
 
-export type OnChangeHandler = (value: Node[], next: () => void) => void
+export type OnChangeHandler = (
+  value: Node[],
+  editor: Editor,
+  next: (value: Node[]) => void
+) => void
 
 type ComposeOnChange = (
   ...handlers: OnChangeHandler[]
-) => (editor: Editor) => (value: Node[]) => void
-const composeOnChange: ComposeOnChange = (...handlers) => (editor) => {
+) => (
+  editor: Editor,
+  setValue: (value: Node[]) => void
+) => (value: Node[]) => void
+const composeOnChange: ComposeOnChange = (...handlers) => (
+  editor,
+  setValue
+) => {
   const composed = handlers.reduceRight((sum, reduce) => {
-    return (value, next) => sum(value, () => reduce(value, next))
+    return (value, editor, next) =>
+      sum(value, editor, (value) => reduce(value, editor, next))
   })
   return (value) => {
-    return composed(value, () => {})
+    return composed(value, editor, (value) => {
+      setValue(value)
+    })
   }
 }
 
