@@ -12,7 +12,7 @@ export type DecorateHandlers = (
 ) => Range[]
 
 const noDecorate: DecorateHandlers = ([node, path], decorates, editor) => {
-  console.log('no Decorate', { entry: [node, path], decorates, editor })
+  // console.log('no Decorate', { entry: [node, path], decorates, editor })
   return decorates || defaultDecorate
 }
 
@@ -22,9 +22,9 @@ type ComposeDecorate = (
 
 const composeDecorate: ComposeDecorate = (...handlers) => (editor) => {
   const composed = handlers.reduceRight((sum, handler): DecorateHandlers => {
-    console.log({ sum, handler })
+    // console.log({ sum, handler })
     return (nodeEntry, decorate, editor, next) => {
-      console.log({ nodeEntry, decorate, editor, next })
+      // console.log({ nodeEntry, decorate, editor, next })
       return handler(
         nodeEntry,
         decorate,
@@ -35,7 +35,7 @@ const composeDecorate: ComposeDecorate = (...handlers) => (editor) => {
     }
   }, noDecorate)
   return (nodeEntry) => {
-    console.log({ nodeEntry })
+    // console.log({ nodeEntry })
     return composed(nodeEntry, defaultDecorate, editor, noDecorate)
   }
 }
