@@ -9,7 +9,6 @@ type Options = {
 
 type OnChange = (options: Options) => OnChangeHandler
 const onChange: OnChange = (options) => (value, editor, next) => {
-  console.log({ options })
   const [isMentioning] = getStartMention(editor)
   if (isMentioning) {
     options.onShowModal()

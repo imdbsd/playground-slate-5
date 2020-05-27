@@ -1,14 +1,19 @@
 import * as React from 'react'
 import { HandlerRenderLeaf } from '../composeRenderLeaf'
 
-const renderLeaf: HandlerRenderLeaf = (props, next) => {
+type Options = {
+  mentionAnchorRef: React.RefObject<HTMLAnchorElement>
+}
+
+type Handler = (options: Options) => HandlerRenderLeaf
+
+const renderLeaf: Handler = (options) => (props, next) => {
   const { leaf } = props
-  console.log({ props })
   switch (leaf.type) {
     case 'mention-index': {
-      console.log('masuk cuk')
       return (
         <a
+          ref={options.mentionAnchorRef}
           href="https://kumparan.com"
           className="mention-context"
           {...props.attributes}
