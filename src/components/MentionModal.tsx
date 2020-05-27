@@ -4,6 +4,7 @@ import { useMention } from '../plugins/mention-plugin'
 
 type Props = {
   editor: Editor
+  selectionIndex?: number | null
   anchorRef: React.RefObject<HTMLAnchorElement>
 }
 type Offset = {
@@ -11,7 +12,7 @@ type Offset = {
   offsetLeft: number
 }
 const MentionModal: React.FC<Props> = (props) => {
-  const { editor, anchorRef } = props
+  const { editor, anchorRef, selectionIndex = 0 } = props
   const [isMentioning, mentionTo] = useMention(editor)
   const modalRef = React.useRef(null)
   const [offsetModal, setOffset] = React.useState<Offset | null>(null)
@@ -53,7 +54,7 @@ const MentionModal: React.FC<Props> = (props) => {
           style={{
             padding: '1px 3px',
             borderRadius: '3px',
-            background: 'transparent',
+            background: i === selectionIndex ? 'teal' : 'transparent',
           }}
         >
           {char}

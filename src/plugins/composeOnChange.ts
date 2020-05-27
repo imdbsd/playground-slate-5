@@ -16,9 +16,9 @@ const composeOnChange: ComposeOnChange = (...handlers) => (
   editor,
   setValue
 ) => {
-  const composed = handlers.reduceRight((sum, reduce) => {
+  const composed = handlers.reduceRight((sum, handlers) => {
     return (value, editor, next) =>
-      sum(value, editor, (value) => reduce(value, editor, next))
+      sum(value, editor, (value) => handlers(value, editor, next))
   })
   return (value) => {
     return composed(value, editor, (value) => {
