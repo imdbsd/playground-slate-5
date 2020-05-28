@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { createEditor, Node, Editor } from 'slate'
+import { createEditor, Node, Editor, Transforms } from 'slate'
 import { Slate, Editable, withReact } from 'slate-react'
 import { withHistory } from 'slate-history'
 import {
@@ -13,8 +13,12 @@ import {
   onChange as _onChangeMention,
   onKeyDown as onKeyDownMention,
   renderLeaf as renderLeafMention,
+  commands as commandsMention,
+  User,
 } from './plugins/mention-plugin'
+import withCorePlugin from './plugins/core-plugin'
 import MentionModal from './components/MentionModal'
+import { CHARACTERS } from './utils'
 
 type ModalType = {
   modal: {
@@ -27,14 +31,25 @@ type ModalType = {
 
 const AppEditor = () => {
   console.log('editor comp')
+  const editor = React.useMemo(
+    () => withCorePlugin(withHistory(withReact(createEditor()))),
+    []
+  )
   const mentionAnchorRef = React.useRef<HTMLAnchorElement>(null)
   const [showModal, setShowModal] = React.useState<ModalType | null>(null)
+  const [userList, setUserList] = React.useState<User[]>([])
   const [editorValue, setEditorValue] = React.useState<Node[]>([
     {
       type: 'paragraph',
       children: [{ text: 'A line of text in a paragraph.' }],
     },
   ])
+  const fetchUserList = React.useCallback((mentionTo: string): void => {
+    const chars = CHARACTERS.filter((c) =>
+      c.name.toLowerCase().startsWith(mentionTo)
+    ).slice(0, 10)
+    setUserList(chars)
+  }, [])
   const handleChangeEditorValue = (
     value: Node[],
     editor: Editor,
@@ -96,9 +111,14 @@ const AppEditor = () => {
   const handlePressEnterInModal = React.useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>): void => {
       event.preventDefault()
+      if (showModal?.modal.type === 'MENTION_MODAL') {
+        const selectedUser = userList[showModal.modal.data.activeIndex]
+        console.log({ selectedUser })
+        commandsMention.insertMention(editor, selectedUser)
+      }
       console.log(showModal)
     },
-    [showModal]
+    [editor, showModal, userList]
   )
   const composedOnKeyDown = composeOnKeyDown(
     onKeyDownMention({
@@ -108,15 +128,12 @@ const AppEditor = () => {
     })
   )
 
-  const editor = React.useMemo(() => withHistory(withReact(createEditor())), [])
-
   const handleDecorate = React.useMemo(() => composedDecorate(editor), [
     composedDecorate,
     editor,
   ])
-  const handlerRenderLeaf = React.useMemo(
-    () => composeRenderLeaf(renderLeafMention({ mentionAnchorRef })),
-    [mentionAnchorRef]
+  const handlerRenderLeaf = composeRenderLeaf(
+    renderLeafMention({ mentionAnchorRef })
   )
   const handleOnChange = composedOnChange(editor, (value) => {
     setEditorValue(value)
@@ -128,6 +145,20 @@ const AppEditor = () => {
 
   return (
     <React.Fragment>
+      <div style={{ padding: '10px' }}>
+        <button
+          onClick={(e) => {
+            e.preventDefault()
+            Transforms.wrapNodes(
+              editor,
+              { type: 'link', url: 'kumparan.com', children: [] },
+              { split: true }
+            )
+          }}
+        >
+          wrap link
+        </button>
+      </div>
       <Slate editor={editor} value={editorValue} onChange={handleOnChange}>
         <Editable
           decorate={handleDecorate}
@@ -139,6 +170,8 @@ const AppEditor = () => {
         editor={editor}
         anchorRef={mentionAnchorRef}
         selectionIndex={showModal ? showModal.modal.data.activeIndex : null}
+        fetchUser={fetchUserList}
+        users={userList}
       />
     </React.Fragment>
   )
