@@ -1,10 +1,12 @@
 import * as React from 'react'
 import { Editor } from 'slate'
-import { useMention } from '../plugins/mention-plugin'
+import { useMention, User } from '../plugins/mention-plugin'
 
 type Props = {
   editor: Editor
   selectionIndex?: number | null
+  fetchUser: (mentionTo: string) => void
+  users: User[]
   anchorRef: React.RefObject<HTMLAnchorElement>
 }
 type Offset = {
@@ -12,13 +14,10 @@ type Offset = {
   offsetLeft: number
 }
 const MentionModal: React.FC<Props> = (props) => {
-  const { editor, anchorRef, selectionIndex = 0 } = props
+  const { editor, anchorRef, selectionIndex = 0, fetchUser, users } = props
   const [isMentioning, mentionTo] = useMention(editor)
   const modalRef = React.useRef(null)
   const [offsetModal, setOffset] = React.useState<Offset | null>(null)
-  const chars = CHARACTERS.filter((c) =>
-    c.toLowerCase().startsWith(mentionTo)
-  ).slice(0, 10)
 
   React.useEffect(() => {
     const { current } = anchorRef
@@ -33,6 +32,12 @@ const MentionModal: React.FC<Props> = (props) => {
       setOffset(null)
     }
   }, [isMentioning, anchorRef])
+
+  React.useEffect(() => {
+    if (isMentioning) {
+      fetchUser(mentionTo)
+    }
+  }, [mentionTo, isMentioning, fetchUser])
   return (
     <div
       className="mention-modal"
@@ -48,16 +53,16 @@ const MentionModal: React.FC<Props> = (props) => {
         boxShadow: '0 1px 5px rgba(0,0,0,.2)',
       }}
     >
-      {chars.map((char, i) => (
+      {users.map((user, i) => (
         <div
-          key={char}
+          key={user.id}
           style={{
             padding: '1px 3px',
             borderRadius: '3px',
             background: i === selectionIndex ? 'teal' : 'transparent',
           }}
         >
-          {char}
+          {user.name}
         </div>
       ))}
     </div>
